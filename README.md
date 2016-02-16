@@ -125,6 +125,28 @@ How to use?
 
 
 
+Or, if your slider must be in relative position, you can just tweak the css, like this:
+
+
+```css
+.slider {
+    position: relative;   /** changed */
+    transition: transform 2s ease;
+    white-space: nowrap; /** changed */
+}
+
+.slider .item {
+    width: 200px;
+    height: 150px;
+    border: 1px solid #eee;
+    margin: 0 2px;
+    background-size: cover;
+    display: inline-block;  /** changed */
+}
+```
+
+
+
 
 
 
@@ -177,6 +199,21 @@ Options
     getContainerWidthCb: null
 }
 ```
+
+
+
+Conception
+--------------
+
+Want to know more about infinite slider? 
+Check out the [conception document](https://github.com/lingtalfi/jInfiniteSlider/blob/master/doc/conception.md). 
+
+
+
+Related
+-----------
+
+- [lys: Infinite scroll plugin](https://github.com/lingtalfi/Lys)
 
 
 

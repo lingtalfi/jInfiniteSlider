@@ -297,6 +297,11 @@ Related
 History Log
 ------------------
     
+- 1.2.0 -- 2016-02-22
+
+    - add onFirstLastPageBlockMove option
+    - add better handling of onFirstLastPage's inner system
+    
 - 1.1.0 -- 2016-02-22
 
     - add infinite option

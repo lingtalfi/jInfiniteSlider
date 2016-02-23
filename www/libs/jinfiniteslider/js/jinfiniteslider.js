@@ -18,7 +18,8 @@
                 var lastItemRightBoundary = parseInt(jLast.offset().left) + jFullSet.outerWidth();
                 var lastPage = (lastItemRightBoundary - getMoveIncrement() <= parseInt(jSlider.parent().offset().left));
                 screenDebug({
-                    offset: offset,
+                    filb: virtualFILB,
+                    lirb: virtualLIRB,
                     first: jFirst.offset().left,
                     last: lastItemRightBoundary,
                     sliderParent: jSlider.parent().offset().left,
@@ -106,28 +107,50 @@
                 if (false === d.infinite) {
 
                     var jLast = d.sliderFindItemsCb(jSlider).last();
-                    var firstItemLeftBoundary = jSlider.position().left;
-                    var lastItemRightBoundary = parseInt(jLast.offset().left) + jFullSet.outerWidth();
+                    if (null === virtualFILB) {
+                        virtualFILB = jSlider.position().left;
+                    }
+                    if (null === virtualLIRB) {
+                        virtualLIRB = parseInt(jLast.offset().left) + jFullSet.outerWidth();
+                    }
+
                     var firstItemLeftBoundaryAfter, lastItemRightBoundaryAfter;
 
                     var mi = getMoveIncrement();
                     if (true === isLeft) {
-                        firstItemLeftBoundaryAfter = firstItemLeftBoundary + mi;
-                        lastItemRightBoundaryAfter = lastItemRightBoundary + mi;
+                        firstItemLeftBoundaryAfter = virtualFILB + mi;
+                        lastItemRightBoundaryAfter = virtualLIRB + mi;
                     }
-                    else {
-                        firstItemLeftBoundaryAfter = firstItemLeftBoundary - mi;
-                        lastItemRightBoundaryAfter = lastItemRightBoundary - mi;
+                    else if (false === isLeft) {
+                        firstItemLeftBoundaryAfter = virtualFILB - mi;
+                        lastItemRightBoundaryAfter = virtualLIRB - mi;
                     }
 
-                    var info = d.getFirstLastPageCb(firstItemLeftBoundary, lastItemRightBoundary, firstItemLeftBoundaryAfter, lastItemRightBoundaryAfter);
+                    var info = d.getFirstLastPageCb(virtualFILB, virtualLIRB, firstItemLeftBoundaryAfter, lastItemRightBoundaryAfter);
+
+
                     if (false === d.onFirstLastPage(info[0], info[1], info[2], info[3], isLeft)) {
                         return false;
+                    }
+
+                    if (true === d.onFirstLastPageBlockMove) {
+                        if (
+                            (true === info[0] && true === isLeft) ||
+                            (true === info[1] && false === isLeft)
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    if (0 !== isLeft) {
+                        virtualFILB = firstItemLeftBoundaryAfter;
+                        virtualLIRB = lastItemRightBoundaryAfter;
                     }
                 }
                 return true;
             }
-            
+
             //------------------------------------------------------------------------------/
             // INIT
             //------------------------------------------------------------------------------/
@@ -135,6 +158,9 @@
             var lOff = 0;
             var nbOriginalItems = 0;
             var nbSafeMi = 2;
+            var virtualFILB = null;
+            var virtualLIRB = null;
+
             var d = $.extend({
                 /**
                  * @param slider - jHandle representing the slider: the element which contains the items.
@@ -189,6 +215,9 @@
                  * - is called before any movement, and allows you to take action depending on whether
                  *          the plugin estimates that you would land on the first or last page.
                  *
+                 *          It is also called when the plugin instantiates, in which case the moveLeft's argument
+                 *          value is set to 0.
+                 *
                  *          You can use the getFirstLastPageCb to override the plugin's default estimation mechanism.
                  *
                  *          This function was added so that one can show/hide the slider's movement control when
@@ -206,40 +235,33 @@
                  * - willLandOnFirst: bool, estimation of whether or not the slide would be on the first page after the move
                  * - willLandOnLast: bool, estimation of whether or not the slide would be on the last page after the move
                  * - moveLeft: bool (if true, it slides to the left, if false, it slides to the right)
-                 * 
-                 * 
-                 * Personal note:
-                 *      this system works, but is not very reliable: in particular if the user clicks repeatedly 
-                 *      very fast on the left control for instance, she would be able to go past the left boundary,
-                 *      and the same logic applies to the right.
-                 *      It wouldn't be too hard to implement a more reliable system (keep track of a virtual slider 
-                 *      position, rather than the real slider pos which depends on the time needed to actually 
-                 *      complete the slide), but I thought it was necessary...
-                 *      
-                 *
                  *
                  */
                 onFirstLastPage: function (isFirst, isLast, willLandOnFirst, willLandOnLast, moveLeft) {
-                    if (
-                        (true === isFirst && true === moveLeft) ||
-                        (true === isLast && false === moveLeft)
-                    ) {
-                        return false;
-                    }
+
                 },
+                /**
+                 * @param onFirstLastPageBlockMove - bool,
+                 *      whether or not to block a left move when the user is on the first page,
+                 *      or a right move when the user is on the last page.
+                 *      By default: those move are forbidden.
+                 *
+                 *      Set this to false to allow them.
+                 */
+                onFirstLastPageBlockMove: true,
                 /**
                  * @param getFirstLastPageCb - callback
                  * Decide whether or not the user is currently on the first/last page, and whether or not the user
                  * will be on the first/last page after the move was performed.
-                 * 
-                 * 
+                 *
+                 *
                  * The arguments are:
-                 * 
-                 *      firstItemLeftBoundary: int, the offset of the leftmost item's left boundary in the slider (compared to the viewport) 
-                 *      lastItemRightBoundary: int, the offset of the rightmost item's right boundary in the slider 
+                 *
+                 *      firstItemLeftBoundary: int, the offset of the leftmost item's left boundary in the slider (compared to the viewport)
+                 *      lastItemRightBoundary: int, the offset of the rightmost item's right boundary in the slider
                  *      firstItemLeftBoundaryAfter: int, the offset of the leftmost item's left boundary in the slider, if the slide was performed
                  *      lastItemRightBoundaryAfter: int, the offset of the rightmost item's right boundary in the slider, if the slide was performed
-                 * 
+                 *
                  * Returns an array of four elements: [isFirstPage, isLastPage, willLandOnFirstPage, willLandOnLastPage];
                  */
                 getFirstLastPageCb: function (firstItemLeftBoundary, lastItemRightBoundary, firstItemLeftBoundaryAfter, lastItemRightBoundaryAfter) {
@@ -286,6 +308,7 @@
             var generatedLeft = visibleLeft;
             var generatedRight = visibleRight;
             stabilize();
+            callDetectFirstLastPage(0);
             //setInterval(debug, 1000);
 
             //------------------------------------------------------------------------------/

@@ -290,6 +290,7 @@ Related
 -----------
 
 - [lys: Infinite scroll plugin](https://github.com/lingtalfi/Lys)
+- [jItemSlider: Simple responsive jquery infinite (circular) slider, based on items](https://github.com/lingtalfi/jItemSlider)
 
 
 

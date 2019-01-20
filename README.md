@@ -8,7 +8,7 @@ Simple jquery infinite (circular) slider.
 
 
 
-![jquery infinite slider](http://s19.postimg.org/72050rmjn/jinfinitescoller.gif)
+![jquery infinite slider](http://lingtalfi.com/img/universe/JInfiniteSlider/jinfinitescoller.gif)
 
 
 JInfiniteSlider is part of the [universe framework](https://github.com/karayabin/universe-snapshot).
